@@ -83,6 +83,11 @@ async function editResponse(json1) {
             obj["snippet"]["channelTitle"] = el["channelRenderer"]["title"]["simpleText"];
             obj["snippet"]["title"] = el["channelRenderer"]["title"]["simpleText"];
             obj["contentDetails"].duration = undefined;
+            try{
+                obj["snippet"]["publishedAt"] = el["channelRenderer"]["navigationEndPoint"]["browseEndpoint"]["canonicalBaseUrl"].replace('/',"");
+            }catch{
+                obj["snippet"]["publishedAt"] = "@"+obj["snippet"]["title"];
+            }
         } else if (el["videoRenderer"]) {
             for (let i in el["videoRenderer"]["thumbnail"]["thumbnails"]) {
                 if (!el["videoRenderer"]["thumbnail"]["thumbnails"][i]["url"].includes("http")) {
@@ -94,6 +99,12 @@ async function editResponse(json1) {
             obj["snippet"]["title"] = el["videoRenderer"]["title"]["runs"][0]["text"];
             obj["id"]["videoId"] = el["videoRenderer"]["videoId"];
             obj["snippet"]["channelTitle"] = el["videoRenderer"]["longBylineText"]["runs"][0]["text"];
+            try{
+                obj["snippet"]["publishedAt"] = el["videoRenderer"]["publishedTimeText"]["simpleText"];
+            }
+            catch{
+                obj["snippet"]["publishedAt"] = " ";
+            }
             if (el["videoRenderer"]["lengthText"])
                 obj["contentDetails"].duration = el["videoRenderer"]["lengthText"]["simpleText"];
         }
