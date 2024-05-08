@@ -19,7 +19,7 @@ app.get("/search",async (req, res) => {
     // let f = fs.readFileSync(path.join(__dirname,"./json2.json"),"utf8");
     // let rr = (editResponse(f));
     console.log(search);
-    let rr = editResponse(await searchFunction(search));
+    let rr = await editResponse(await searchFunction(search));
     // rr = {thiss:{test:"works"}}
     res.status(200);
     res.json(rr);
@@ -75,7 +75,7 @@ async function editResponse(json1) {
         if (el["channelRenderer"]) {
             for(let i in el["channelRenderer"]["thumbnail"]["thumbnails"]){
                 if (!el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"].includes("http")) {
-                    el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"] = "https:" + el["videoRenderer"]["thumbnail"]["thumbnails"][1]["url"];
+                    el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"] = "https:" + el["channelRenderer"]["thumbnail"]["thumbnails"][1]["url"];
                 }
                 obj["snippet"]["thumbnails"]["medium"]["url"] = el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"];
                 obj["snippet"]["thumbnails"]["default"]["url"] = el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"];
