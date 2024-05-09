@@ -20,7 +20,11 @@ app.get("/search", async (req, res) => {
     let rr = await editResponse(await searchFunction(search));
     res.status(200);
     res.json(rr);
-    console.log(rr);
+    // console.log(rr);
+    console.log("response done");
+});
+app.get("/",(req,res)=>{
+    res.status(200).sendFile(path.join(__dirname,"./youtube.html"));
 });
 function funcPromise(data, resolve, reject) {
     let id = setInterval(() => {
