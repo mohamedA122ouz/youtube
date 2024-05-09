@@ -16,11 +16,8 @@ app.listen(port, () => {
 });
 app.get("/search", async (req, res) => {
     let search = req.query.q;
-    // let f = fs.readFileSync(path.join(__dirname,"./json2.json"),"utf8");
-    // let rr = (editResponse(f));
     console.log(search);
     let rr = await editResponse(await searchFunction(search));
-    // rr = {thiss:{test:"works"}}
     res.status(200);
     res.json(rr);
     console.log(rr);
@@ -46,7 +43,6 @@ async function searchFunction(txt) {
         });
         res.on("end", () => {
             string = Buffer.concat(string).toString();
-            // console.log(string);
             let string2 = string;
             let intialDataIndex = string2.indexOf("ytInitialData") + 16;//+16 to exclude (ytInitialData = ) from json
             let finalIndexOfIntial = string2.indexOf("</script>", intialDataIndex) - 1; // exclude (;) from json
@@ -54,9 +50,6 @@ async function searchFunction(txt) {
             let json = JSON.parse(string2);
             json = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"];
             string = string.replaceAll(/<a style="display: none;" href=\"\/\"/ig, `<a style="display: none;" href="http://127.0.0.1:5500/Youtube/?"`);
-            // fs.writeFileSync("./html.html",string);
-            // fs.writeFileSync("./json2.json",JSON.stringify(json));
-            // fs.writeFileSync("./json.json",string2);
             data.current = json;
         });
     });
@@ -68,7 +61,6 @@ async function searchFunction(txt) {
 
 async function editResponse(json1) {
     const json = { items: [] };
-    // let arr = JSON.parse(string);
     let arr = json1;
     for (let el of arr) {
         let obj = { contentDetails: {}, id: {}, publishedAt: {}, snippet: { thumbnails: { medium: {}, "default": {} } } };
