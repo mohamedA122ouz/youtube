@@ -16,11 +16,22 @@ app.listen(port, () => {
 });
 app.get("/search", async (req, res) => {
     let search = req.query.q;
-    console.log(search);
-    let rr = await editResponse(await searchFunction(search));
+    let link ="https://www.youtube.com/results?search_query="+search;
+    console.log(link);
+    let rr = await editResponse(await searchFunction(link));
     res.status(200);
     res.json(rr);
-    // console.log(rr);
+    console.log(rr);
+    console.log("response done");
+});
+app.get("/get", async (req, res) => {
+    let search = req.query.q;
+    let link ="https://www.youtube.com/"+search+"/videos";
+    console.log(link);
+    let rr = await editResponse(await searchFunction(link));
+    res.status(200);
+    res.json(rr);
+    console.log(rr);
     console.log("response done");
 });
 app.get("/",(req,res)=>{
@@ -40,7 +51,7 @@ function funcPromise(data, resolve, reject) {
 
 async function searchFunction(txt) {
     const data = { current: null };
-    https.get("https://www.youtube.com/results?search_query=" + txt).on("response", (res) => {
+    https.get(txt).on("response", (res) => {
         let string = [];
         res.on("data", (data) => {
             string.push(data);
@@ -80,7 +91,8 @@ async function editResponse(json1) {
             obj["snippet"]["title"] = el["channelRenderer"]["title"]["simpleText"];
             obj["contentDetails"].duration = undefined;
             try{
-                obj["snippet"]["publishedAt"] = el["channelRenderer"]["navigationEndPoint"]["browseEndpoint"]["canonicalBaseUrl"].replace('/',"");
+                obj["snippet"]["publishedAt"] = el["channelRenderer"]["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"];
+                obj["snippet"]["publishedAt"] = (obj["snippet"]["publishedAt"]).replace("/","");
             }catch{
                 obj["snippet"]["publishedAt"] = "@"+obj["snippet"]["title"];
             }
