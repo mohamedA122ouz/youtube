@@ -64,7 +64,7 @@ async function searchFunction(txt) {
             let finalIndexOfIntial = string2.indexOf("</script>", intialDataIndex) - 1; // exclude (;) from json
             string2 = string2.substring(intialDataIndex, finalIndexOfIntial);
             let json = JSON.parse(string2);
-            console.log(json);
+            console.log(JSON.stringify(json));
             json = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"];
             string = string.replaceAll(/<a style="display: none;" href=\"\/\"/ig, `<a style="display: none;" href="http://127.0.0.1:5500/Youtube/?"`);
             data.current = json;
