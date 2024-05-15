@@ -16,6 +16,7 @@ app.listen(port, () => {
 });
 app.get("/search", async (req, res) => {
     let search = req.query.q;
+    // let search = ".net full course Tutorial";
     let link ="https://www.youtube.com/results?search_query="+search;
     console.log(link);
     let rr = await editResponse(await searchFunction(link));
@@ -63,6 +64,7 @@ async function searchFunction(txt) {
             let finalIndexOfIntial = string2.indexOf("</script>", intialDataIndex) - 1; // exclude (;) from json
             string2 = string2.substring(intialDataIndex, finalIndexOfIntial);
             let json = JSON.parse(string2);
+            console.log(json);
             json = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"];
             string = string.replaceAll(/<a style="display: none;" href=\"\/\"/ig, `<a style="display: none;" href="http://127.0.0.1:5500/Youtube/?"`);
             data.current = json;
