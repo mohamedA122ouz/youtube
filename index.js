@@ -17,7 +17,7 @@ app.listen(port, () => {
 app.get("/search", async (req, res) => {
     let search = req.query.q;
     // let search = ".net full course Tutorial";
-    let link ="https://www.youtube.com/results?search_query="+search;
+    let link = "https://www.youtube.com/results?search_query=" + search;
     console.log(link);
     let rr = await editResponse(await searchFunction(link));
     res.status(200);
@@ -27,7 +27,7 @@ app.get("/search", async (req, res) => {
 });
 app.get("/get", async (req, res) => {
     let search = req.query.q;
-    let link ="https://www.youtube.com/"+search+"/videos";
+    let link = "https://www.youtube.com/" + search + "/videos";
     console.log(link);
     let rr = await editResponse(await searchFunction(link));
     res.status(200);
@@ -35,8 +35,8 @@ app.get("/get", async (req, res) => {
     console.log(rr);
     console.log("response done");
 });
-app.get("/",(req,res)=>{
-    res.status(200).sendFile(path.join(__dirname,"./youtube.html"));
+app.get("/", (req, res) => {
+    res.status(200).sendFile(path.join(__dirname, "./youtube.html"));
 });
 function funcPromise(data, resolve, reject) {
     let id = setInterval(() => {
@@ -52,7 +52,15 @@ function funcPromise(data, resolve, reject) {
 
 async function searchFunction(txt) {
     const data = { current: null };
-    https.get(txt).on("response", (res) => {
+    let options = { 
+        hostname: "https://www.youtube.com",
+        path: `/results?search_query=${txt}`,
+        method: "GET",
+        headers: { 
+            "accept-language": "en-US" 
+        } 
+    };
+    https.get(options).on("response", (res) => {
         let string = [];
         res.on("data", (data) => {
             string.push(data);
@@ -92,11 +100,11 @@ async function editResponse(json1) {
             obj["snippet"]["channelTitle"] = el["channelRenderer"]["title"]["simpleText"];
             obj["snippet"]["title"] = el["channelRenderer"]["title"]["simpleText"];
             obj["contentDetails"].duration = undefined;
-            try{
+            try {
                 obj["snippet"]["publishedAt"] = el["channelRenderer"]["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"];
-                obj["snippet"]["publishedAt"] = (obj["snippet"]["publishedAt"]).replace("/","");
-            }catch{
-                obj["snippet"]["publishedAt"] = "@"+obj["snippet"]["title"];
+                obj["snippet"]["publishedAt"] = (obj["snippet"]["publishedAt"]).replace("/", "");
+            } catch {
+                obj["snippet"]["publishedAt"] = "@" + obj["snippet"]["title"];
             }
         } else if (el["videoRenderer"]) {
             for (let i in el["videoRenderer"]["thumbnail"]["thumbnails"]) {
@@ -109,10 +117,10 @@ async function editResponse(json1) {
             obj["snippet"]["title"] = el["videoRenderer"]["title"]["runs"][0]["text"];
             obj["id"]["videoId"] = el["videoRenderer"]["videoId"];
             obj["snippet"]["channelTitle"] = el["videoRenderer"]["longBylineText"]["runs"][0]["text"];
-            try{
+            try {
                 obj["snippet"]["publishedAt"] = el["videoRenderer"]["publishedTimeText"]["simpleText"];
             }
-            catch{
+            catch {
                 obj["snippet"]["publishedAt"] = " ";
             }
             if (el["videoRenderer"]["lengthText"])
