@@ -18,20 +18,18 @@ app.listen(port, () => {
     console.log("app runs at port: " + port);
 });
 app.get("/search", async (req, res) => {
-    // let search = req.query.q;
-    let search = ".net full course Tutorial";
-    let link = "https://www.youtube.com/results?search_query=" + search;
+    let search = req.query.q;
+    let link = "results?search_query=" + search;
     console.log(link);
-    let rr = await editResponse(await searchFunction(search));
+    let rr = await editResponse(await searchFunction(link));
     res.status(200);
-    // res.json(await searchFunction(search));
-    res.send(await searchFunction(search));
+    res.json(rr);
     console.log(rr);
     console.log("response done");
 });
 app.get("/get", async (req, res) => {
     let search = req.query.q;
-    let link = "https://www.youtube.com/" + search + "/videos";
+    let link = "/" + search + "/videos";
     console.log(link);
     let rr = await editResponse(await searchFunction(link));
     res.status(200);
@@ -58,7 +56,7 @@ async function searchFunction(txt) {
     const data = { current: null };
     let options = { 
         hostname: "www.youtube.com",
-        path: `/results?search_query=${txt}`.escaped(),
+        path: `/${txt.escaped()}`,
         method: "GET",
         headers: { 
             "accept-language": "en-EG" 
@@ -78,8 +76,7 @@ async function searchFunction(txt) {
             let json = JSON.parse(string2);
             console.log(JSON.stringify(json));
             json = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"];
-            string = string.replaceAll(/<a style="display: none;" href=\"\/\"/ig, `<a style="display: none;" href="http://127.0.0.1:5500/Youtube/?"`);
-            data.current = string;
+            data.current = json;
         });
     });
     await new Promise(async (resolve, rejects) => {
@@ -129,6 +126,25 @@ async function editResponse(json1) {
             }
             if (el["videoRenderer"]["lengthText"])
                 obj["contentDetails"].duration = el["videoRenderer"]["lengthText"]["simpleText"];
+        }
+        else if(el['playlistRenderer']){
+            let finalImage = el["playlistRenderer"]["thumbnails"][0]["thumbnails"].length;
+            for (let i in el["playlistRenderer"]["thumbnails"][0]["thumbnails"]) {
+                if (!el["playlistRenderer"]["thumbnails"][0]["thumbnails"][i]["url"].includes("http")) {
+                    el["playlistRenderer"]["thumbnails"][0]["thumbnails"][i]["url"] = "https:" + el["playlistRenderer"]["thumbnails"][0]["thumbnails"][1]["url"];
+                }
+                obj["snippet"]["thumbnails"]["medium"]["url"] = el["playlistRenderer"]["thumbnails"][0]["thumbnails"][i]["url"];
+                obj["snippet"]["thumbnails"]["default"]["url"] = el["playlistRenderer"]["thumbnails"][0]["thumbnails"][i]["url"];
+            }
+            obj["snippet"]["channelTitle"] = el["playlistRenderer"]["title"]["simpleText"];
+            obj["snippet"]["title"] = el["playlistRenderer"]["title"]["simpleText"];
+            obj["contentDetails"].duration = undefined;
+            try {
+                obj["snippet"]["publishedAt"] = el["playlistRenderer"]["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"];
+                obj["snippet"]["publishedAt"] = (obj["snippet"]["publishedAt"]).replace("/", "");
+            } catch {
+                obj["snippet"]["publishedAt"] = "@" + obj["snippet"]["title"];
+            }
         }
         else {
             continue;
