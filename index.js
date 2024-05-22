@@ -9,17 +9,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
 app.use(express.json());
+String.prototype.escaped = function () {
+    return encodeURI(this);
+}
 const port = "3002";
 app.use(cors({ origin: "*" }));
 app.listen(port, () => {
     console.log("app runs at port: " + port);
 });
 app.get("/search", async (req, res) => {
-    let search = req.query.q;
-    // let search = ".net full course Tutorial";
+    // let search = req.query.q;
+    let search = ".net full course Tutorial";
     let link = "https://www.youtube.com/results?search_query=" + search;
     console.log(link);
-    let rr = await editResponse(await searchFunction(link));
+    let rr = await editResponse(await searchFunction(search));
     res.status(200);
     res.json(rr);
     console.log(rr);
@@ -53,11 +56,11 @@ function funcPromise(data, resolve, reject) {
 async function searchFunction(txt) {
     const data = { current: null };
     let options = { 
-        hostname: "https://www.youtube.com",
-        path: `/results?search_query=${txt}`,
+        hostname: "www.youtube.com",
+        path: `/results?search_query=${txt}`.escaped(),
         method: "GET",
         headers: { 
-            "accept-language": "en-US" 
+            "accept-language": "en-EG" 
         } 
     };
     https.get(options).on("response", (res) => {
