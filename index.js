@@ -24,7 +24,8 @@ app.get("/search", async (req, res) => {
     console.log(link);
     let rr = await editResponse(await searchFunction(search));
     res.status(200);
-    res.json(await searchFunction(search));
+    // res.json(await searchFunction(search));
+    res.send(await searchFunction(search));
     console.log(rr);
     console.log("response done");
 });
@@ -78,7 +79,7 @@ async function searchFunction(txt) {
             console.log(JSON.stringify(json));
             json = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"];
             string = string.replaceAll(/<a style="display: none;" href=\"\/\"/ig, `<a style="display: none;" href="http://127.0.0.1:5500/Youtube/?"`);
-            data.current = json;
+            data.current = string;
         });
     });
     await new Promise(async (resolve, rejects) => {
