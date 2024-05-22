@@ -74,7 +74,7 @@ async function searchFunction(txt) {
             let finalIndexOfIntial = string2.indexOf("</script>", intialDataIndex) - 1; // exclude (;) from json
             string2 = string2.substring(intialDataIndex, finalIndexOfIntial);
             let json = JSON.parse(string2);
-            console.log(JSON.stringify(json));
+            // console.log(JSON.stringify(json));
             json = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"];
             data.current = json;
         });
