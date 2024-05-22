@@ -24,7 +24,7 @@ app.get("/search", async (req, res) => {
     console.log(link);
     let rr = await editResponse(await searchFunction(search));
     res.status(200);
-    res.json(rr);
+    res.json(await searchFunction(search));
     console.log(rr);
     console.log("response done");
 });
