@@ -165,7 +165,7 @@ async function editResponse(json1) {
                 obj["snippet"]["publishedAt"] = el["playlistRenderer"]["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"];
                 obj["snippet"]["publishedAt"] = (obj["snippet"]["publishedAt"]).replace("/", "");
             } catch {
-                obj["snippet"]["publishedAt"] = "@" + obj["title"]["simpleText"];
+                obj["snippet"]["publishedAt"] = "@" + el["playlistRenderer"]["title"]["simpleText"];
             }
         }
         else {
