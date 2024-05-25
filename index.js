@@ -160,6 +160,7 @@ async function editResponse(json1) {
             obj["snippet"]["channelTitle"] = el["playlistRenderer"]["title"]["simpleText"];
             obj["snippet"]["title"] = el["playlistRenderer"]["title"]["simpleText"];
             obj["contentDetails"].duration = undefined;
+            obj["id"]["playlistId"] = el["playlistRenderer"]["playlistId"];
             try {
                 obj["snippet"]["publishedAt"] = el["playlistRenderer"]["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"];
                 obj["snippet"]["publishedAt"] = (obj["snippet"]["publishedAt"]).replace("/", "");
