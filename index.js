@@ -79,13 +79,13 @@ async function searchFunction(txt) {
             // dataPlace[0]["itemSectionRenderer"]["contents"].forEach((current,i) => {
             // });
             for (let i in dataPlace) {
-                try{
+                try {
                     let current = dataPlace[i]["itemSectionRenderer"]["contents"][0];
                     if ("channelRenderer" in current || "videoRenderer" in current || "playlistRenderer" in current) {
                         index = i;
                         break;
                     }
-                }catch{
+                } catch {
                     console.log(dataPlace);
                 }
             }
@@ -110,7 +110,7 @@ async function editResponse(json1) {
     const json = { items: [] };
     let arr = json1;
     for (let el of arr) {
-        let obj = { contentDetails: {}, id: {}, publishedAt: {}, snippet: { thumbnails: { medium: {}, "default": {} } } };
+        let obj = { contentDetails: {}, id: {},channelImg:undefined, publishedAt: {}, snippet: { thumbnails: { medium: {}, "default": {} } } };
         if (el["channelRenderer"]) {
             for (let i in el["channelRenderer"]["thumbnail"]["thumbnails"]) {
                 if (!el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"].includes("http")) {
@@ -119,7 +119,7 @@ async function editResponse(json1) {
                 obj["snippet"]["thumbnails"]["medium"]["url"] = el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"];
                 obj["snippet"]["thumbnails"]["default"]["url"] = el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"];
             }
-            obj["snippet"]["channelTitle"] = el["channelRenderer"]["title"]["simpleText"];
+            obj["snippet"]["channelTitle"] = "";//el["channelRenderer"]["title"]["simpleText"]";
             obj["snippet"]["title"] = el["channelRenderer"]["title"]["simpleText"];
             obj["contentDetails"].duration = undefined;
             try {
@@ -141,6 +141,7 @@ async function editResponse(json1) {
             obj["snippet"]["channelTitle"] = el["videoRenderer"]["longBylineText"]["runs"][0]["text"];
             try {
                 obj["snippet"]["publishedAt"] = el["videoRenderer"]["publishedTimeText"]["simpleText"];
+                obj["channelImg"] = el["videoRenderer"]["channelThumbnailSupportedRenderers"]["channelThumbnailWithLinkRenderer"]["thumbnail"]["thumbnails"][0]["url"];
             }
             catch {
                 obj["snippet"]["publishedAt"] = " ";
@@ -161,12 +162,7 @@ async function editResponse(json1) {
             obj["snippet"]["title"] = el["playlistRenderer"]["title"]["simpleText"];
             obj["contentDetails"].duration = undefined;
             obj["id"]["playlistId"] = el["playlistRenderer"]["playlistId"];
-            try {
-                obj["snippet"]["publishedAt"] = el["playlistRenderer"]["navigationEndpoint"]["browseEndpoint"]["canonicalBaseUrl"];
-                obj["snippet"]["publishedAt"] = (obj["snippet"]["publishedAt"]).replace("/", "");
-            } catch {
-                obj["snippet"]["publishedAt"] = "@" + el["playlistRenderer"]["title"]["simpleText"];
-            }
+            obj["snippet"]["publishedAt"] = "";
         }
         else {
             continue;
