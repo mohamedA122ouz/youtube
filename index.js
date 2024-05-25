@@ -54,13 +54,13 @@ function funcPromise(data, resolve, reject) {
 
 async function searchFunction(txt) {
     const data = { current: null };
-    let options = { 
+    let options = {
         hostname: "www.youtube.com",
         path: `/${txt.escaped()}`,
         method: "GET",
-        headers: { 
-            "accept-language": "en-EG" 
-        } 
+        headers: {
+            "accept-language": "en-EG"
+        }
     };
     https.get(options).on("response", (res) => {
         let string = [];
@@ -74,9 +74,26 @@ async function searchFunction(txt) {
             let finalIndexOfIntial = string2.indexOf("</script>", intialDataIndex) - 1; // exclude (;) from json
             string2 = string2.substring(intialDataIndex, finalIndexOfIntial);
             let json = JSON.parse(string2);
-            // console.log(JSON.stringify(json));
-            json = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0]["itemSectionRenderer"]["contents"];
+            let dataPlace = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"];
+            let index = 0;
+            // dataPlace[0]["itemSectionRenderer"]["contents"].forEach((current,i) => {
+            // });
+            for (let i in dataPlace) {
+                let current = dataPlace[i]["itemSectionRenderer"]["contents"][0];
+                if ("channelRenderer" in current || "videoRenderer" in current || "playlistRenderer" in current) {
+                    index = i;
+                    break;
+                }
+            }
+            json = dataPlace[index]["itemSectionRenderer"]["contents"];
+            //debugging part
+            // fs.writeFileSync("C:/Users/Prime11/Desktop/test/JDebuggingNotEdited.json", JSON.stringify(string2));
+            // fs.writeFileSync("C:/Users/Prime11/Desktop/test/JDebugging.json", JSON.stringify(json));
+            // fs.writeFileSync("C:/Users/Prime11/Desktop/test/HDebugging.html", string);
+            // fs.writeFileSync("C:/Users/Prime11/Desktop/test/ItemsDebugging.json", JSON.stringify(editResponse(json)));
+            //________________
             data.current = json;
+
         });
     });
     await new Promise(async (resolve, rejects) => {
@@ -127,7 +144,7 @@ async function editResponse(json1) {
             if (el["videoRenderer"]["lengthText"])
                 obj["contentDetails"].duration = el["videoRenderer"]["lengthText"]["simpleText"];
         }
-        else if(el['playlistRenderer']){
+        else if (el['playlistRenderer']) {
             let finalImage = el["playlistRenderer"]["thumbnails"][0]["thumbnails"].length;
             for (let i in el["playlistRenderer"]["thumbnails"][0]["thumbnails"]) {
                 if (!el["playlistRenderer"]["thumbnails"][0]["thumbnails"][i]["url"].includes("http")) {
