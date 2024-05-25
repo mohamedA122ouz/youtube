@@ -40,77 +40,69 @@ app.get("/get", async (req, res) => {
 app.get("/", (req, res) => {
     res.status(200).sendFile(path.join(__dirname, "./youtube.html"));
 });
-function funcPromise(data, resolve, reject) {
-    let id = setInterval(() => {
-        if (data.current === undefined) {
-            reject(data);
-            clearInterval(id);
-        } else if (data.current != null) {
-            resolve(data);
-            clearInterval(id);
-        }
-    }, 450);
-}
-
 async function searchFunction(txt) {
-    const data = { current: null };
-    let options = {
-        hostname: "www.youtube.com",
-        path: `/${txt.escaped()}`,
-        method: "GET",
-        headers: {
-            "accept-language": "en-EG"
-        }
-    };
-    https.get(options).on("response", (res) => {
-        let string = [];
-        res.on("data", (data) => {
-            string.push(data);
-        });
-        res.on("end", () => {
-            string = Buffer.concat(string).toString();
-            let string2 = string;
-            let intialDataIndex = string2.indexOf("ytInitialData") + 16;//+16 to exclude (ytInitialData = ) from json
-            let finalIndexOfIntial = string2.indexOf("</script>", intialDataIndex) - 1; // exclude (;) from json
-            string2 = string2.substring(intialDataIndex, finalIndexOfIntial);
-            let json = JSON.parse(string2);
-            let dataPlace = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"];
-            let index = 0;
-            // dataPlace[0]["itemSectionRenderer"]["contents"].forEach((current,i) => {
-            // });
-            for (let i in dataPlace) {
-                try {
-                    let current = dataPlace[i]["itemSectionRenderer"]["contents"][0];
-                    if ("channelRenderer" in current || "videoRenderer" in current || "playlistRenderer" in current) {
-                        index = i;
-                        break;
-                    }
-                } catch {
-                    console.log(dataPlace);
-                }
+    return new Promise((resolve, reject) => {
+        let options = {
+            hostname: "www.youtube.com",
+            path: `/${txt.escaped()}`,
+            method: "GET",
+            headers: {
+                "accept-language": "en-EG"
             }
-            json = dataPlace[index]["itemSectionRenderer"]["contents"];
-            //debugging part
-            // fs.writeFileSync("C:/Users/Prime11/Desktop/test/JDebuggingNotEdited.json", JSON.stringify(string2));
-            // fs.writeFileSync("C:/Users/Prime11/Desktop/test/JDebugging.json", JSON.stringify(json));
-            // fs.writeFileSync("C:/Users/Prime11/Desktop/test/HDebugging.html", string);
-            // fs.writeFileSync("C:/Users/Prime11/Desktop/test/ItemsDebugging.json", JSON.stringify(editResponse(json)));
-            //________________
-            data.current = json;
-
+        };
+        https.get(options).on("response", (res) => {
+            try {
+                let string = [];
+                res.on("data", (data) => {
+                    string.push(data);
+                });
+                res.on("end", () => {
+                    string = Buffer.concat(string).toString();
+                    let string2 = string;
+                    let intialDataIndex = string2.indexOf("ytInitialData") + 16;//+16 to exclude (ytInitialData = ) from json
+                    let finalIndexOfIntial = string2.indexOf("</script>", intialDataIndex) - 1; // exclude (;) from json
+                    string2 = string2.substring(intialDataIndex, finalIndexOfIntial);
+                    let json = JSON.parse(string2);
+                    let dataPlace = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"];
+                    let index = 0;
+                    // dataPlace[0]["itemSectionRenderer"]["contents"].forEach((current,i) => {
+                    // });
+                    for (let i in dataPlace) {
+                        try {
+                            let current = dataPlace[i]["itemSectionRenderer"]["contents"][0];
+                            if ("channelRenderer" in current || "videoRenderer" in current || "playlistRenderer" in current) {
+                                index = i;
+                                break;
+                            }
+                        } catch {
+                            console.log(dataPlace);
+                        }
+                    }
+                    json = dataPlace[index]["itemSectionRenderer"]["contents"];
+                    resolve(json);
+                    res.removeAllListeners('data');
+                    res.removeAllListeners('end');
+                    //debugging part
+                    // fs.writeFileSync("C:/Users/Prime11/Desktop/test/JDebuggingNotEdited.json", JSON.stringify(string2));
+                    // fs.writeFileSync("C:/Users/Prime11/Desktop/test/JDebugging.json", JSON.stringify(json));
+                    // fs.writeFileSync("C:/Users/Prime11/Desktop/test/HDebugging.html", string);
+                    // fs.writeFileSync("C:/Users/Prime11/Desktop/test/ItemsDebugging.json", JSON.stringify(editResponse(json)));
+                    //________________
+                });
+            } catch (ex) {
+                reject(ex);
+                res.removeAllListeners('data');
+                res.removeAllListeners('end');
+            }
         });
     });
-    await new Promise(async (resolve, rejects) => {
-        funcPromise(data, resolve, rejects);
-    });
-    return data.current;
 }
 
 async function editResponse(json1) {
     const json = { items: [] };
     let arr = json1;
     for (let el of arr) {
-        let obj = { contentDetails: {}, id: {},channelImg:undefined, publishedAt: {}, snippet: { thumbnails: { medium: {}, "default": {} } } };
+        let obj = { contentDetails: {}, id: {}, channelImg: undefined, publishedAt: {}, snippet: { thumbnails: { medium: {}, "default": {} } } };
         if (el["channelRenderer"]) {
             for (let i in el["channelRenderer"]["thumbnail"]["thumbnails"]) {
                 if (!el["channelRenderer"]["thumbnail"]["thumbnails"][i]["url"].includes("http")) {
