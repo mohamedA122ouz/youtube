@@ -79,10 +79,14 @@ async function searchFunction(txt) {
             // dataPlace[0]["itemSectionRenderer"]["contents"].forEach((current,i) => {
             // });
             for (let i in dataPlace) {
-                let current = dataPlace[i]["itemSectionRenderer"]["contents"][0];
-                if ("channelRenderer" in current || "videoRenderer" in current || "playlistRenderer" in current) {
-                    index = i;
-                    break;
+                try{
+                    let current = dataPlace[i]["itemSectionRenderer"]["contents"][0];
+                    if ("channelRenderer" in current || "videoRenderer" in current || "playlistRenderer" in current) {
+                        index = i;
+                        break;
+                    }
+                }catch{
+                    console.log(dataPlace);
                 }
             }
             json = dataPlace[index]["itemSectionRenderer"]["contents"];
