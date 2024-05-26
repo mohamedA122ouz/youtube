@@ -15,7 +15,7 @@ String.prototype.escaped = function () {
 const port = "3002";
 app.use(cors({ origin: "*" }));
 app.listen(port, () => {
-    console.log("app runs at port: " + port);
+    //console.log("app runs at port: " + port);
 });
 app.get("/search", async (req, res) => {
     let search = req.query.q;
@@ -24,18 +24,19 @@ app.get("/search", async (req, res) => {
     let rr = await editResponse(await searchFunction(link));
     res.status(200);
     res.json(rr);
-    console.log(rr);
-    console.log("response done");
+    //console.log(rr);
+    let data = new Date();
+    console.log("response done time: "+data.getHours()%12+data.getMinutes());
 });
 app.get("/get", async (req, res) => {
     let search = req.query.q;
     let link = "/" + search + "/videos";
-    console.log(link);
+    //console.log(link);
     let rr = await editResponse(await searchFunction(link));
     res.status(200);
     res.json(rr);
-    console.log(rr);
-    console.log("response done");
+    //console.log(rr);
+    //console.log("response done");
 });
 app.get("/", (req, res) => {
     res.status(200).sendFile(path.join(__dirname, "./youtube.html"));
@@ -75,7 +76,7 @@ async function searchFunction(txt) {
                                 break;
                             }
                         } catch {
-                            console.log(dataPlace);
+                            //console.log(dataPlace);
                         }
                     }
                     json = dataPlace[index]["itemSectionRenderer"]["contents"];
