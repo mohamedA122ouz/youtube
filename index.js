@@ -5,6 +5,7 @@ import express from "express";
 import { fileURLToPath } from "url";
 import path, { dirname, resolve } from "path";
 import { rejects } from "assert";
+import { channel } from "diagnostics_channel";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
@@ -15,23 +16,23 @@ String.prototype.escaped = function () {
 const port = "3002";
 app.use(cors({ origin: "*" }));
 app.listen(port, () => {
-    //console.log("app runs at port: " + port);
+    console.log("app runs at port: " + port);
 });
 app.get("/search", async (req, res) => {
     let search = req.query.q;
     let link = "results?search_query=" + search;
     console.log(link);
-    let rr = await editResponse(await searchFunction(link));
+    let rr = await searchData(link);
     res.status(200);
     res.json(rr);
     //console.log(rr);
     console.log("response done");
 });
-app.get("/get", async (req, res) => {
+app.get("/channel", async (req, res) => {
     let search = req.query.q;
-    let link = "/" + search + "/videos";
+    let link = search + "/videos";
     //console.log(link);
-    let rr = await editResponse(await searchFunction(link));
+    let rr = await listChannel(link);
     res.status(200);
     res.json(rr);
     //console.log(rr);
@@ -40,7 +41,71 @@ app.get("/get", async (req, res) => {
 app.get("/", (req, res) => {
     res.status(200).sendFile(path.join(__dirname, "./youtube.html"));
 });
-async function searchFunction(txt) {
+async function searchData(txt) {
+    let json = await getData(txt);
+    let dataPlace = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"];
+    //finding the index of object that includes channelRender or videoRenderer or playlistRenderer that includes the main elements to render video card
+    let index = 0;
+    for (let i in dataPlace) {
+        try {
+            let current = dataPlace[i]["itemSectionRenderer"]["contents"][0];
+            if ("channelRenderer" in current || "videoRenderer" in current || "playlistRenderer" in current) {
+                index = i;
+                break;
+            }
+        } catch {
+            //console.log(dataPlace);
+        }
+    }
+    json = dataPlace[index]["itemSectionRenderer"]["contents"];
+    return editResponseForSearch(json);
+}
+async function listChannel(channelID) {
+    let json = await getData(channelID);
+    let channalOBJ = {};
+    channalOBJ.channelImg = json.header.c4TabbedHeaderRenderer.avatar.thumbnails[json.header.c4TabbedHeaderRenderer.avatar.thumbnails.length];
+    channalOBJ.channelTitle = json.header.c4TabbedHeaderRenderer.title;
+    json = json["contents"]["twoColumnBrowseResultsRenderer"]["tabs"];
+    //find the object that includes tabs>[index?]>tabRenderer>content
+    //the content
+    let index = 0;
+    for (let i in json) {
+        try {
+            let current = json[i]["tabRenderer"];
+            if ("content" in current) {
+                index = i;
+                break;
+            }
+        } catch {
+            //console.log(dataPlace);
+        }
+    }
+    json = json[index]["tabRenderer"]["content"]["richGridRenderer"]["contents"];
+    return editResponseForChannel(json, channalOBJ);
+}
+async function editResponseForChannel(json1, channelOBJ) {
+    const json = { items: [] };
+    let arr = json1;
+    for (let el of arr) {
+        let obj = { contentDetails: {}, id: {}, channelImg: undefined, publishedAt: {}, snippet: { thumbnails: { medium: {}, "default": {} } } };
+        if (el["richItemRenderer"]) {
+            let current = el["richItemRenderer"]["content"]["videoRenderer"];
+            obj.id.videoId = current.videoId;
+            obj.contentDetails.duration = current.lengthText.simpleText;
+            obj.snippet.title = current.title.runs[0].text;
+            obj.snippet.publishedAt = current.publishedTimeText.simpleText;
+            obj.channelImg = channelOBJ.channelImg;
+            obj.snippet.channelTitle = channelOBJ.channelTitle;
+            for (let i in current.thumbnail.thumbnails) {
+                let size = (i==0?"small":i==current.thumbnail.thumbnails.length -1?"medium":"defualt");
+                obj.snippet.thumbnails[size] = current.thumbnail.thumbnails[i];
+            }
+            json.items.push(obj);
+        }
+    }
+    return json;
+}
+function getData(txt) {
     return new Promise((resolve, reject) => {
         let options = {
             hostname: "www.youtube.com",
@@ -62,31 +127,14 @@ async function searchFunction(txt) {
                     let intialDataIndex = string2.indexOf("ytInitialData") + 16;//+16 to exclude (ytInitialData = ) from json
                     let finalIndexOfIntial = string2.indexOf("</script>", intialDataIndex) - 1; // exclude (;) from json
                     string2 = string2.substring(intialDataIndex, finalIndexOfIntial);
-                    let json = JSON.parse(string2);
-                    let dataPlace = json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"];
-                    let index = 0;
-                    // dataPlace[0]["itemSectionRenderer"]["contents"].forEach((current,i) => {
-                    // });
-                    for (let i in dataPlace) {
-                        try {
-                            let current = dataPlace[i]["itemSectionRenderer"]["contents"][0];
-                            if ("channelRenderer" in current || "videoRenderer" in current || "playlistRenderer" in current) {
-                                index = i;
-                                break;
-                            }
-                        } catch {
-                            //console.log(dataPlace);
-                        }
-                    }
-                    json = dataPlace[index]["itemSectionRenderer"]["contents"];
-                    resolve(json);
+                    resolve(JSON.parse(string2));
                     res.removeAllListeners('data');
                     res.removeAllListeners('end');
                     //debugging part
-                    // fs.writeFileSync("C:/Users/Prime11/Desktop/test/JDebuggingNotEdited.json", JSON.stringify(string2));
-                    // fs.writeFileSync("C:/Users/Prime11/Desktop/test/JDebugging.json", JSON.stringify(json));
-                    // fs.writeFileSync("C:/Users/Prime11/Desktop/test/HDebugging.html", string);
-                    // fs.writeFileSync("C:/Users/Prime11/Desktop/test/ItemsDebugging.json", JSON.stringify(editResponse(json)));
+                    // fs.writeFileSync("./JDebuggingNotEdited.json", JSON.stringify(string2));
+                    // fs.writeFileSync("./JDebugging.json", JSON.stringify(JSON.parse(string2)));
+                    // fs.writeFileSync("./HDebugging.html", string);
+                    // fs.writeFileSync("./ItemsDebugging.json", JSON.stringify(editResponseForSearch(JSON.parse(string2))));
                     //________________
                 });
             } catch (ex) {
@@ -98,7 +146,7 @@ async function searchFunction(txt) {
     });
 }
 
-async function editResponse(json1) {
+async function editResponseForSearch(json1) {
     const json = { items: [] };
     let arr = json1;
     for (let el of arr) {
