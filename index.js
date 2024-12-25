@@ -1,11 +1,8 @@
 import https from "https";
-import fs from "fs";
 import cors from "cors";
 import express from "express";
 import { fileURLToPath } from "url";
-import path, { dirname, resolve } from "path";
-import { rejects } from "assert";
-import { channel } from "diagnostics_channel";
+import path, { dirname } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const app = express();
@@ -17,6 +14,10 @@ const port = "3002";
 app.use(cors({ origin: "*" }));
 app.listen(port, () => {
     console.log("app runs at port: " + port);
+});
+app.get("/awake",(req,res)=>{
+    res.status(200);
+    res.send("I am up don't worry");
 });
 app.get("/search", async (req, res) => {
     let search = req.query.q;
